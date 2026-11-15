@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/cliente_service.dart';
 import '../services/producto_service.dart';
+import '../services/venta_service.dart';
+import '../utils/formato.dart';
 import 'clientes_screen.dart';
 import 'productos_screen.dart';
+import 'ventas_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _productos = 0;
   int _clientes = 0;
+  int _ventas = 0;
+  double _deuda = 0;
 
   @override
   void initState() {
@@ -24,10 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _cargar() async {
     final productos = await ProductoService().listar();
     final clientes = await ClienteService().listar();
+    final ventas = await VentaService().listar();
+    final deuda = ventas.fold(0.0, (suma, v) => suma + v.saldo);
     if (!mounted) return;
     setState(() {
       _productos = productos.length;
       _clientes = clientes.length;
+      _ventas = ventas.length;
+      _deuda = deuda;
     });
   }
 
@@ -46,6 +55,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _Tarjeta(
+            icono: Icons.point_of_sale,
+            titulo: 'Ventas',
+            detalle: '$_ventas registradas · Fiados pendientes: ${pesos(_deuda)}',
+            onTap: () => _abrir(const VentasScreen()),
+          ),
+          const SizedBox(height: 12),
           _Tarjeta(
             icono: Icons.checkroom,
             titulo: 'Productos',
