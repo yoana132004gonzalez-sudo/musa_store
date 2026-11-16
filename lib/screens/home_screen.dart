@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/cliente_service.dart';
+import '../services/gasto_service.dart';
 import '../services/producto_service.dart';
 import '../services/venta_service.dart';
 import '../utils/formato.dart';
 import 'clientes_screen.dart';
+import 'gastos_screen.dart';
 import 'productos_screen.dart';
+import 'resumen_screen.dart';
 import 'ventas_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _productos = 0;
   int _clientes = 0;
   int _ventas = 0;
+  int _gastos = 0;
   double _deuda = 0;
 
   @override
@@ -30,12 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final productos = await ProductoService().listar();
     final clientes = await ClienteService().listar();
     final ventas = await VentaService().listar();
+    final gastos = await GastoService().listar();
     final deuda = ventas.fold(0.0, (suma, v) => suma + v.saldo);
     if (!mounted) return;
     setState(() {
       _productos = productos.length;
       _clientes = clientes.length;
       _ventas = ventas.length;
+      _gastos = gastos.length;
       _deuda = deuda;
     });
   }
@@ -63,6 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 12),
           _Tarjeta(
+            icono: Icons.bar_chart,
+            titulo: 'Resumen',
+            detalle: 'Ventas, gastos y ganancia',
+            onTap: () => _abrir(const ResumenScreen()),
+          ),
+          const SizedBox(height: 12),
+          _Tarjeta(
             icono: Icons.checkroom,
             titulo: 'Productos',
             detalle: '$_productos cargados',
@@ -74,6 +87,13 @@ class _HomeScreenState extends State<HomeScreen> {
             titulo: 'Clientes',
             detalle: '$_clientes cargados',
             onTap: () => _abrir(const ClientesScreen()),
+          ),
+          const SizedBox(height: 12),
+          _Tarjeta(
+            icono: Icons.receipt_long,
+            titulo: 'Gastos',
+            detalle: '$_gastos registrados',
+            onTap: () => _abrir(const GastosScreen()),
           ),
         ],
       ),
